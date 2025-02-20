@@ -1,50 +1,36 @@
-//create web server
+// Create web server that listens on port 3000
+// Create a route that listens for POST requests to /comments
+// When a POST request is made, add the comment to the comments array
+// When a GET request is made to /comments, return the comments array in the response
+
 const express = require('express');
-const app = express();
 const bodyParser = require('body-parser');
-const path = require('path');
-const fs = require('fs');
-const comments = require('./comments.json');
-const uuid = require('uuid');
 
+const app = express();
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-//get comments
-app.get('/comments', (req, res) => {
-    res.json(comments);
-});
+const comments = [];
 
-//add comments
 app.post('/comments', (req, res) => {
-    const newComment = {
-        id: uuid.v4(),
-        name: req.body.name,
-        comment: req.body.comment,
-        date: new Date()
-    };
-    comments.push(newComment);
-    fs.writeFile('./comments.json', JSON.stringify(comments), (err) => {
-        if (err) {
-            res.status(500).send('Error writing file');
-        }
-        res.status(201).send(newComment);
-    });
+    const comment = req.body;
+    comments.push(comment);
+    res.send('Comment added');
 });
 
-//delete comments
-app.delete('/comments/:id', (req, res) => {
-    const comment = comments.find(c => c.id === req.params.id);
-    if (!comment) {
-        res.status(404).send('Comment not found');
-        return;
-    }
-    comments = comments.filter(c => c.id !== req.params.id);
-    fs.writeFile('./comments.json', JSON.stringify(comments), (err) => {
-        if (err) {
-            res.status(500).send('Error writing file');
-        }
-        res.status(204).send();
-    });
-}
-);
+app.get('/comments', (req, res) => {
+    res.send(comments);
+});
+
+app.listen(3000, () => {
+    console.log('Server is listening on port 3000');
+});
+
+// POST request
+// curl -X POST -d '{"comment": "hello"}' -H 'Content-Type: application/json' http://localhost:3000/comments
+
+// GET request
+// curl http://localhost:3000/comments
+
+// {
+//     "comment": "hello"
+// }
